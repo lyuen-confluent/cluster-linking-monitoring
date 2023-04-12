@@ -115,8 +115,8 @@ Created topic users.
 
 Here are some scenario you can try to observe the behavior of a cluster link.
 
-### 1. Update the connectors to generate higher workload
-### 2. Apply a quota on Source cluster
+### 1. Update the connector config to generate higher workload
+### 2. Apply a quota on source cluster
 ### 3. Bring down a confluent server on destination cluster
 ### 4. Bring down a confluent server on source cluster
 ### 5. Start a client application to consume messages from source cluster
