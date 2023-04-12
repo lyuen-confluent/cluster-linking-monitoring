@@ -1,6 +1,12 @@
 # Overview
-
+The following diagram depicts the overall architecture of this demo envrionment.
 ![Architecture Diagram](img/architecture.png)
+- There are two Kafka clusters running, namely source and destination cluster. Each cluster consists of a single zookeeper and two confluent servers.
+- They are sharing the same schema registry.
+- A single Control Center is used to manage and monitor both clusters, source cluster is used as for control center topics.
+- A single node Connect cluster is connected to the source kafka cluster. There are two instances of datagen connectors running, they are generating messages to pageviews and users topics respectively.
+- Prometheus is used to collect the JMX metrics from confluent servers.
+- Grafana is used to visualize the collected metrics.
 
 ## Getting Started
 
@@ -105,3 +111,12 @@ Created topic users.
 5. Open the dashboard on Grafana called "Cluster Linking Demo"
 6. Execute the script "stop.sh" to stop the environment
 
+## Things to Try
+
+Here are some scenario you can try to observe the behavior of a cluster link.
+
+### 1. Update the connectors to generate higher workload
+### 2. Apply a quota on Source cluster
+### 3. Bring down a confluent server on destination cluster
+### 4. Bring down a confluent server on source cluster
+### 5. Start a client application to consume messages from source cluster
