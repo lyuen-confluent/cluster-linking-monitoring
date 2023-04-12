@@ -1,0 +1,399 @@
+---
+version: '3.5'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.2
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    volumes:
+      - ./jmx-monitoring-stacks/shared-assets/jmx-exporter/:/usr/share/jmx-exporter
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1234:/usr/share/jmx-exporter/zookeeper.yml
+
+  broker-1:
+    image: confluentinc/cp-server:7.3.2
+    hostname: broker-1
+    container_name: broker-1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9091:9091"
+      - "19091:19091"
+      - "8090:8090"
+      - "9991:9991"
+    volumes:
+      - ./jmx-monitoring-stacks/shared-assets/jmx-exporter/:/usr/share/jmx-exporter
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CLIENT:SASL_PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      #KAFKA_LISTENERS: INTERNAL://broker:9091,CLIENT://broker:19091
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-1:9091,CLIENT://broker-1:19091
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_JMX_PORT: 9991
+      KAFKA_JMX_HOSTNAME: localhost
+      # EmbeddedKafkaRest: Kafka Client Configuration
+      # KAFKA_KAFKA_REST_BOOTSTRAP_SERVERS: PLAINTEXT://broker:10091
+      KAFKA_CONFLUENT_HTTP_SERVER_LISTENERS: http://0.0.0.0:8090
+       # Confluent Metrics Reporter
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      KAFKA_CONFLUENT_MONITORING_INTERCEPTER_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 2
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_METRICS_REPORTER_TOPIC_CREATE: 'true'
+      # schema registry
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1434:/usr/share/jmx-exporter/kafka_broker.yml
+      # health+
+      KAFKA_CONFLUENT_TELEMETRY_ENABLED: 'false'
+      # KAFKA_CONFLUENT_TELEMETRY_API_KEY: xxxxx
+      # KAFKA_CONFLUENT_TELEMETRY_API_SECRET: xxxxx
+      KAFKA_PASSWORD_ENCODER_SECRET: mysecret
+      # security
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_CLIENT_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_CLIENT_PLAIN_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.plain.PlainLoginModule required \
+              username="admin" \
+              password="admin-secret" \
+              user_admin="admin-secret" \
+              user_cl="cl-secret";
+      # bandwidth control
+      KAFKA_CONFLUENT_CLUSTER_LINK_IO_MAX_BYTES_PER_SECOND: 1048576
+      KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+      # KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 2
+  
+  broker-2:
+    image: confluentinc/cp-server:7.3.2
+    hostname: broker-2
+    container_name: broker-2
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+      - "8091:8091"
+      - "9992:9992"
+    volumes:
+      - ./jmx-monitoring-stacks/shared-assets/jmx-exporter/:/usr/share/jmx-exporter
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CLIENT:SASL_PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      #KAFKA_LISTENERS: INTERNAL://broker:9091,CLIENT://broker:19091
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-2:9092,CLIENT://broker-2:19092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_JMX_PORT: 9992
+      KAFKA_JMX_HOSTNAME: localhost
+      # EmbeddedKafkaRest: Kafka Client Configuration
+      # KAFKA_KAFKA_REST_BOOTSTRAP_SERVERS: PLAINTEXT://broker:10091
+      KAFKA_CONFLUENT_HTTP_SERVER_LISTENERS: http://0.0.0.0:8091
+       # Confluent Metrics Reporter
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      KAFKA_CONFLUENT_MONITORING_INTERCEPTER_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 2
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_METRICS_REPORTER_TOPIC_CREATE: 'true'
+      # schema registry
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1434:/usr/share/jmx-exporter/kafka_broker.yml
+      # health+
+      KAFKA_CONFLUENT_TELEMETRY_ENABLED: 'false'
+      # KAFKA_CONFLUENT_TELEMETRY_API_KEY: xxxxx
+      # KAFKA_CONFLUENT_TELEMETRY_API_SECRET: xxxxx
+      KAFKA_PASSWORD_ENCODER_SECRET: mysecret
+      # security
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_CLIENT_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_CLIENT_PLAIN_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.plain.PlainLoginModule required \
+              username="admin" \
+              password="admin-secret" \
+              user_admin="admin-secret" \
+              user_cl="cl-secret";
+      # bandwidth control
+      KAFKA_CONFLUENT_CLUSTER_LINK_IO_MAX_BYTES_PER_SECOND: 1048576
+      KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+      # KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 2
+  
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.3.2
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - broker-1
+      - broker-2
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./jmx-monitoring-stacks/shared-assets/jmx-exporter/:/usr/share/jmx-exporter
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
+      EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1234:/usr/share/jmx-exporter/confluent_schemaregistry.yml
+
+  connect:
+    image: confluentinc/cp-server-connect:7.3.2
+    hostname: connect
+    container_name: connect
+    depends_on:
+      - broker-1
+      - broker-2
+      - schema-registry
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./jmx-monitoring-stacks/shared-assets/jmx-exporter/:/usr/share/jmx-exporter
+      - ./data/connect-jars:/data/connect-jars
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: compose-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: _connect-configs
+      CONNECT_REPLICATION_FACTOR: 2
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 2
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_OFFSET_STORAGE_TOPIC: _connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 2
+      CONNECT_STATUS_STORAGE_TOPIC: _connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 2
+      CONNECT_CONFIG_STORAGE_PARTITIONS: 1
+      CONNECT_OFFSET_STORAGE_PARTITIONS: 1
+      CONNECT_STATUS_STORAGE_PARTITIONS: 1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_PLUGIN_PATH: "/usr/share/filestream-connectors,/usr/share/java,/usr/share/confluent-hub-components,/data/connect-jars"
+      CONNECT_LOG4J_APPENDER_STDOUT_LAYOUT_CONVERSIONPATTERN: "[%d] %p %X{connector.context}%m (%c:%L)%n"
+      EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1234:/usr/share/jmx-exporter/kafka_connect.yml
+      # CLASSPATH required due to CC-2422
+      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-7.3.2.jar
+      CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
+      CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+  
+  zookeeper-destination:
+    image: confluentinc/cp-zookeeper:7.3.2
+    hostname: zookeeper-destination
+    container_name: zookeeper-destination
+    ports:
+      - "3181:3181"
+    volumes:
+      - ./jmx-monitoring-stacks/shared-assets/jmx-exporter/:/usr/share/jmx-exporter
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 3181
+      ZOOKEEPER_TICK_TIME: 2000
+      EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1334:/usr/share/jmx-exporter/zookeeper.yml
+  
+  broker-destination-1:
+    image: confluentinc/cp-server:7.3.2
+    hostname: broker-destination-1
+    container_name: broker-destination-1
+    depends_on:
+      - zookeeper-destination
+    ports:
+      - "9391:9391"
+      - "19391:19391"
+      - "8390:8390"
+      - "9993:9993"
+    volumes:
+      - ./jmx-monitoring-stacks/shared-assets/jmx-exporter/:/usr/share/jmx-exporter
+      - ./data/configs:/data/configs
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper-destination:3181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CLIENT:SASL_PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-destination-1:9391,CLIENT://broker-destination-1:19391
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_JMX_PORT: 9993
+      KAFKA_JMX_HOSTNAME: localhost
+      # EmbeddedKafkaRest: Kafka Client Configuration
+      # KAFKA_KAFKA_REST_BOOTSTRAP_SERVERS: PLAINTEXT://broker-destination:13091
+      KAFKA_CONFLUENT_HTTP_SERVER_LISTENERS: http://0.0.0.0:8390
+       # Confluent Metrics Reporter
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      KAFKA_CONFLUENT_MONITORING_INTERCEPTER_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      # CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-destination:9391
+      # CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_METRICS_REPORTER_TOPIC_CREATE: 'true'
+      # Cluster Linking
+      KAFKA_CONFLUENT_CLUSTER_LINK_ENABLE : 'true'
+      # schema registry
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1534:/usr/share/jmx-exporter/kafka_broker.yml
+      # health+
+      KAFKA_CONFLUENT_TELEMETRY_ENABLED: 'false'
+      # KAFKA_CONFLUENT_TELEMETRY_API_KEY: xxxxx
+      # KAFKA_CONFLUENT_TELEMETRY_API_SECRET: xxxxx
+      KAFKA_PASSWORD_ENCODER_SECRET: mysecret
+      # security
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_CLIENT_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_CLIENT_PLAIN_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.plain.PlainLoginModule required \
+              username="admin" \
+              password="admin-secret" \
+              user_admin="admin-secret" \
+              user_cl="cl-secret";
+      # bandwidth control
+      KAFKA_CONFLUENT_CLUSTER_LINK_IO_MAX_BYTES_PER_SECOND: 1048576
+      KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+      # KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 2
+
+  broker-destination-2:
+    image: confluentinc/cp-server:7.3.2
+    hostname: broker-destination-2
+    container_name: broker-destination-2
+    depends_on:
+      - zookeeper-destination
+    ports:
+      - "9392:9392"
+      - "19392:19392"
+      - "8391:8391"
+      - "9994:9994"
+    volumes:
+      - ./jmx-monitoring-stacks/shared-assets/jmx-exporter/:/usr/share/jmx-exporter
+      - ./data/configs:/data/configs
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper-destination:3181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CLIENT:SASL_PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-destination-2:9392,CLIENT://broker-destination-2:19392
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_JMX_PORT: 9994
+      KAFKA_JMX_HOSTNAME: localhost
+      # EmbeddedKafkaRest: Kafka Client Configuration
+      # KAFKA_KAFKA_REST_BOOTSTRAP_SERVERS: PLAINTEXT://broker-destination:13091
+      KAFKA_CONFLUENT_HTTP_SERVER_LISTENERS: http://0.0.0.0:8391
+       # Confluent Metrics Reporter
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      KAFKA_CONFLUENT_MONITORING_INTERCEPTER_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      # CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-destination:9391
+      # CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_METRICS_REPORTER_TOPIC_CREATE: 'true'
+      # Cluster Linking
+      KAFKA_CONFLUENT_CLUSTER_LINK_ENABLE : 'true'
+      # schema registry
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1534:/usr/share/jmx-exporter/kafka_broker.yml
+      # health+
+      KAFKA_CONFLUENT_TELEMETRY_ENABLED: 'false'
+      # KAFKA_CONFLUENT_TELEMETRY_API_KEY: xxxxx
+      # KAFKA_CONFLUENT_TELEMETRY_API_SECRET: xxxxx
+      KAFKA_PASSWORD_ENCODER_SECRET: mysecret
+      # security
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_CLIENT_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_CLIENT_PLAIN_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.plain.PlainLoginModule required \
+              username="admin" \
+              password="admin-secret" \
+              user_admin="admin-secret" \
+              user_cl="cl-secret";
+      # bandwidth control
+      KAFKA_CONFLUENT_CLUSTER_LINK_IO_MAX_BYTES_PER_SECOND: 1048576
+      KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+      # KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 2
+
+  prometheus:
+    image: prom/prometheus:v2.29.2
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./jmx-monitoring-stacks/jmxexporter-prometheus-grafana/assets/prometheus/prometheus-config/:/etc/prometheus
+
+  node-exporter:
+    image: prom/node-exporter:v1.2.2
+    container_name: node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.ignored-mount-points"
+      - "^(aufs|proc|nsfs|shm|cgroup|tmpfs|binfmt_misc|debugfs|devpts|fusectl|hugetlbfs|fuse.lxcfs|mqueue|pstore|securityfs|sysfs|autofs|devtmpfs|configfs)"
+      
+  grafana:
+    image: grafana/grafana:8.5.16
+    container_name: grafana
+    environment:
+      - "GF_SECURITY_ADMIN_USER=admin"
+      - "GF_SECURITY_ADMIN_PASSWORD=password"
+      - "GF_USERS_ALLOW_SIGN_UP=false"
+    ports:
+      - 3000:3000
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+      - ./jmx-monitoring-stacks/jmxexporter-prometheus-grafana/assets/grafana/provisioning/:/etc/grafana/provisioning
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:7.3.2
+    hostname: control-center
+    container_name: control-center
+    depends_on:
+      - zookeeper
+      - broker-1
+      - broker-2
+      - zookeeper-destination
+      - broker-destination-1
+      - broker-destination-2
+      - connect
+      - schema-registry
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      CONTROL_CENTER_CONNECT_CONNECT-DEFAULT_CLUSTER: 'connect:8083'
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      CONTROL_CENTER_REPLICATION_FACTOR: 2
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONTROL_CENTER_KAFKA_SOURCE_BOOTSTRAP_SERVERS: broker-1:9091,broker-2:9092
+      CONTROL_CENTER_KAFKA_DESTINATION_BOOTSTRAP_SERVERS: broker-destination-1:9391,broker-destination-2:9392
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 2
+      PORT: 9021
+
