@@ -1,10 +1,10 @@
 # Overview
 
-![image](files:./../img/architecture.png)
+![Architecture Diagram](img/architecture.png)
 
 ## Getting Started
 
-1. Execute the script "runme_once.sh", it will download "jmx-monitoring-stacks" repo to your local directory and copy over the customized config files
+1. Execute the script "runme_once.sh", it will download "jmx-monitoring-stacks" repo to your local directory and copy over the customized config files.
 
 ```
 % ./runme_once.sh 
@@ -20,9 +20,9 @@ Resolving deltas: 100% (717/717), done.
 >>> done
 ```
 
-! This step only have to be run once.
+This step only have to be run once.
 
-2. Execute the script "start.sh" to spin up the environment.
+2. Execute the script "start.sh" to start the environment.
 
 ```
 % ./start.sh 
@@ -103,4 +103,5 @@ Created topic users.
 3. Access Control Center from "http://localhost:9021"
 4. Access Grafana from "http://localhost:3000" (admin/password)
 5. Open the dashboard on Grafana called "Cluster Linking Demo"
+6. Execute the script "stop.sh" to stop the environment
 
