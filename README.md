@@ -107,9 +107,31 @@ Created topic users.
 -------------------------------------------
 ```
 3. Access Control Center from "http://localhost:9021"
+![c3](img/c3.png)
 4. Access Grafana from "http://localhost:3000" (admin/password)
+![grafana](img/grafana.png)
 5. Open the dashboard on Grafana called "Cluster Linking Demo"
+![dashboard](img/dashboard.png)
 6. Execute the script "stop.sh" to stop the environment
+```
+% ./stop.sh 
+
+Teardown
+[+] Running 13/12
+ ⠿ Container control-center                    Removed                                                                                     2.5s
+ ⠿ Container grafana                           Removed                                                                                     0.9s
+ ⠿ Container prometheus                        Removed                                                                                     0.8s
+ ⠿ Container node-exporter                     Removed                                                                                     0.7s
+ ⠿ Container broker-destination-2              Removed                                                                                    10.7s
+ ⠿ Container connect                           Removed                                                                                     3.3s
+ ⠿ Container broker-destination-1              Removed                                                                                     3.3s
+ ⠿ Container schema-registry                   Removed                                                                                     1.3s
+ ⠿ Container broker-1                          Removed                                                                                     2.4s
+ ⠿ Container broker-2                          Removed                                                                                    10.9s
+ ⠿ Container zookeeper-destination             Removed                                                                                     0.6s
+ ⠿ Container zookeeper                         Removed                                                                                     0.6s
+ ⠿ Network cluster-linking-monitoring_default  Removed
+```
 
 ## Things to Try
 
