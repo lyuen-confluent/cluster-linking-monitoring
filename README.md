@@ -31,28 +31,36 @@ This step only have to be run once.
 2. Execute the script "start.sh" to start the environment.
 
 ```
-% ./start.sh 
+% ./start.sh
 -------------------------------------------
 Run cluster origin and destination
 -------------------------------------------
 [+] Running 13/13
- ⠿ Network cluster-linking-monitoring_default  Created                                                 0.0s
- ⠿ Container grafana                           Started                                                 1.1s
- ⠿ Container prometheus                        Started                                                 1.2s
- ⠿ Container node-exporter                     Started                                                 0.9s
- ⠿ Container zookeeper                         Started                                                 1.0s
- ⠿ Container zookeeper-destination             Started                                                 1.0s
- ⠿ Container broker-destination-1              Started                                                 1.7s
- ⠿ Container broker-destination-2              Started                                                 1.6s
- ⠿ Container broker-2                          Started                                                 1.4s
- ⠿ Container broker-1                          Started                                                 1.5s
- ⠿ Container schema-registry                   Started                                                 2.0s
- ⠿ Container connect                           Started                                                 2.5s
- ⠿ Container control-center                    Started                                                 3.0s
+ ⠿ Network cluster-linking-monitoring_default  Created                                                                 0.0s
+ ⠿ Container prometheus                        Started                                                                 1.0s
+ ⠿ Container zookeeper-destination             Started                                                                 1.1s
+ ⠿ Container node-exporter                     Started                                                                 0.8s
+ ⠿ Container grafana                           Started                                                                 1.1s
+ ⠿ Container zookeeper                         Started                                                                 0.9s
+ ⠿ Container broker-destination-2              Started                                                                 1.7s
+ ⠿ Container broker-destination-1              Started                                                                 1.6s
+ ⠿ Container broker-1                          Started                                                                 1.5s
+ ⠿ Container broker-2                          Started                                                                 1.5s
+ ⠿ Container schema-registry                   Started                                                                 1.9s
+ ⠿ Container connect                           Started                                                                 2.7s
+ ⠿ Container control-center                    Started                                                                 3.5s
 -------------------------------------------
 ------------------------------------------------
 wait for connect to start...
 ------------------------------------------------
+Waiting up to 900 seconds for connect to start
+waiting...
+waiting...
+waiting...
+waiting...
+waiting...
+connect has started in 50 seconds!
+-------------------------------------------
 Create topic pageviews on source cluster
 -------------------------------------------
 Created topic pageviews.
@@ -60,7 +68,7 @@ Created topic pageviews.
 Create pageviews datagen on source cluster
 -------------------------------------------
 HTTP/1.1 201 Created
-Date: Wed, 12 Apr 2023 10:08:19 GMT
+Date: Sun, 16 Apr 2023 00:01:59 GMT
 Location: http://localhost:8083/connectors/datagen-pageviews
 Content-Type: application/json
 Content-Length: 345
@@ -86,7 +94,7 @@ Created topic users.
 Create users datagen on source cluster
 -------------------------------------------
 HTTP/1.1 201 Created
-Date: Wed, 12 Apr 2023 10:08:27 GMT
+Date: Sun, 16 Apr 2023 00:02:08 GMT
 Location: http://localhost:8083/connectors/datagen-users
 Content-Type: application/json
 Content-Length: 305
@@ -105,6 +113,7 @@ Create mirror topic users
 -------------------------------------------
 Created topic users.
 -------------------------------------------
+
 ```
 3. Access Control Center from "http://localhost:9021"
 ![c3](img/c3.png)
