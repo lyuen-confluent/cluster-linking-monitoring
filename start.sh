@@ -10,7 +10,23 @@ echo "------------------------------------------------"
 echo "wait for connect to start..."
 echo "------------------------------------------------"
 
-sleep 100
+MAX_WAIT=900
+CUR_WAIT=0
+echo "Waiting up to $MAX_WAIT seconds for connect to start"
+docker container logs connect > /tmp/out.txt 2>&1
+while [[ ! $(cat /tmp/out.txt) =~ "Kafka Connect started" ]]; do
+    sleep 10
+    echo "waiting..."
+    docker container logs connect > /tmp/out.txt 2>&1
+    CUR_WAIT=$(( CUR_WAIT+10 ))
+    if [[ "$CUR_WAIT" -gt "$MAX_WAIT" ]]; then
+        echo "ERROR: Did not manage to start."
+        exit 1
+    fi
+done
+rm /tmp/out.txt
+echo "connect has started in $CUR_WAIT seconds!"
+echo "-------------------------------------------"
 
 echo "Create topic pageviews on source cluster"
 echo "-------------------------------------------"
