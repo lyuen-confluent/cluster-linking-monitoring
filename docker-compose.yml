@@ -3,7 +3,7 @@ version: '3.5'
 
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.3.2
+    image: confluentinc/cp-zookeeper:7.4.1
     hostname: zookeeper
     container_name: zookeeper
     ports:
@@ -16,7 +16,7 @@ services:
       EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1234:/usr/share/jmx-exporter/zookeeper.yml
 
   broker-1:
-    image: confluentinc/cp-server:7.3.2
+    image: confluentinc/cp-server:7.4.1
     hostname: broker-1
     container_name: broker-1
     depends_on:
@@ -77,7 +77,7 @@ services:
       # KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 2
   
   broker-2:
-    image: confluentinc/cp-server:7.3.2
+    image: confluentinc/cp-server:7.4.1
     hostname: broker-2
     container_name: broker-2
     depends_on:
@@ -138,7 +138,7 @@ services:
       # KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 2
   
   schema-registry:
-    image: confluentinc/cp-schema-registry:7.3.2
+    image: confluentinc/cp-schema-registry:7.4.1
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -156,7 +156,7 @@ services:
       EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1234:/usr/share/jmx-exporter/confluent_schemaregistry.yml
 
   connect:
-    image: confluentinc/cp-server-connect:7.3.2
+    image: confluentinc/cp-server-connect:7.4.1
     hostname: connect
     container_name: connect
     depends_on:
@@ -191,12 +191,12 @@ services:
       CONNECT_LOG4J_APPENDER_STDOUT_LAYOUT_CONVERSIONPATTERN: "[%d] %p %X{connector.context}%m (%c:%L)%n"
       EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1234:/usr/share/jmx-exporter/kafka_connect.yml
       # CLASSPATH required due to CC-2422
-      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-7.3.2.jar
+      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-7.4.1.jar
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
   
   zookeeper-destination:
-    image: confluentinc/cp-zookeeper:7.3.2
+    image: confluentinc/cp-zookeeper:7.4.1
     hostname: zookeeper-destination
     container_name: zookeeper-destination
     ports:
@@ -209,7 +209,7 @@ services:
       EXTRA_ARGS: -javaagent:/usr/share/jmx-exporter/jmx_prometheus_javaagent-0.16.1.jar=1334:/usr/share/jmx-exporter/zookeeper.yml
   
   broker-destination-1:
-    image: confluentinc/cp-server:7.3.2
+    image: confluentinc/cp-server:7.4.1
     hostname: broker-destination-1
     container_name: broker-destination-1
     depends_on:
@@ -273,7 +273,7 @@ services:
       # KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 2
 
   broker-destination-2:
-    image: confluentinc/cp-server:7.3.2
+    image: confluentinc/cp-server:7.4.1
     hostname: broker-destination-2
     container_name: broker-destination-2
     depends_on:
@@ -371,7 +371,7 @@ services:
       - ./jmx-monitoring-stacks/jmxexporter-prometheus-grafana/assets/grafana/provisioning/:/etc/grafana/provisioning
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center:7.3.2
+    image: confluentinc/cp-enterprise-control-center:7.4.1
     hostname: control-center
     container_name: control-center
     depends_on:
